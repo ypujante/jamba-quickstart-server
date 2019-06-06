@@ -1,11 +1,11 @@
 package org.pongasoft.jamba.quickstart.server.be.services
 
 import io.reactivex.subjects.PublishSubject
-import org.junit.Assert.assertEquals
-import org.junit.Test
 import org.linkedin.util.clock.ClockUtils
 import org.linkedin.util.concurrent.ThreadControl
 import java.util.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class JobQueueTest {
 

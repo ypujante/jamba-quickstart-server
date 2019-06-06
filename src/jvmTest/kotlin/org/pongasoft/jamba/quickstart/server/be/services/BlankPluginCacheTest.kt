@@ -1,7 +1,5 @@
 package org.pongasoft.jamba.quickstart.server.be.services
 
-import org.junit.Assert.*
-import org.junit.Test
 import org.pongasoft.jamba.quickstart.server.be.utils.child
 import java.io.File
 import java.net.URI
@@ -10,6 +8,9 @@ import java.nio.file.Files
 import java.time.Clock
 import java.time.LocalDate
 import java.util.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class BlankPluginCacheTest
 {
@@ -93,7 +94,7 @@ class BlankPluginCacheTest
                               emptyMap<String, String>()).use { zfs ->
 
       for(p in Files.walk(zfs.getPath("/"))) {
-        assertTrue("$p not expected", expectedEntries.containsKey(p.toString()))
+        assertTrue(expectedEntries.containsKey(p.toString()), "$p not expected")
         val expectedContent = expectedEntries.remove(p.toString())
         if(expectedContent == null)
           assertTrue(Files.isDirectory(p)) // directory
