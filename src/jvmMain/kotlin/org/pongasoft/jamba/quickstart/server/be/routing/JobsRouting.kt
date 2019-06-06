@@ -7,14 +7,12 @@ import io.ktor.routing.get
 import io.ktor.routing.post
 import io.ktor.routing.route
 import io.ktor.routing.routing
-import io.ktor.util.KtorExperimentalAPI
 import org.pongasoft.jamba.quickstart.server.be.beans
 
 /*
   Check Locations: https://ktor.io/servers/features/locations.html for building url
  */
 
-@KtorExperimentalAPI
 fun Application.jobsRouting() {
   val log = environment.log
   routing {
