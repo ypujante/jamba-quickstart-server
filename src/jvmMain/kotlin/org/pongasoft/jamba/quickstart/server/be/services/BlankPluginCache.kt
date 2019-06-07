@@ -26,10 +26,11 @@ class BlankPluginCache(val blankPluginRoot: File,
   /**
    * Populates the cache */
   fun reload(blankPluginRoot: File) {
+    log.info("Reloading caches from ${blankPluginRoot.canonicalPath}")
     _files = blankPluginRoot.walkTopDown()
         .filter { it.isFile }
         .associateBy({ it.relativeTo(blankPluginRoot).path}, { it.readText() })
-    _jambaGitHash = computeGitHash()
+    _jambaGitHash = computeGitHash(blankPluginRoot)
     log.info("Cache reloaded. count=${_files.size}, git=$_jambaGitHash")
   }
 
@@ -108,11 +109,12 @@ class BlankPluginCache(val blankPluginRoot: File,
   /**
    * Computes the git hash
    */
-  private fun computeGitHash(): String {
+  private fun computeGitHash(rootDir: File): String {
 
     val hashResult =
         ProcessBuilder(listOf("git", "--no-pager", "log", "-1", "--pretty=format:%H"))
             .redirectErrorStream(true)
+            .directory(rootDir)
             .start()
             .syncOut(timeout = 10, unit = TimeUnit.SECONDS)
 
@@ -120,6 +122,7 @@ class BlankPluginCache(val blankPluginRoot: File,
       val tagHashResult =
           ProcessBuilder(listOf("git", "describe", "--tags", hashResult.stdout))
               .redirectErrorStream(true)
+              .directory(rootDir)
               .start()
               .syncOut(timeout = 10, unit = TimeUnit.SECONDS)
       if(tagHashResult.exitValue == 0)

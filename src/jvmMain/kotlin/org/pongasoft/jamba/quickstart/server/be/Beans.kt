@@ -1,7 +1,5 @@
 package org.pongasoft.jamba.quickstart.server.be
 
-import io.ktor.application.ApplicationCall
-import io.ktor.util.AttributeKey
 import org.pongasoft.jamba.quickstart.server.be.services.BlankPluginCache
 import org.pongasoft.jamba.quickstart.server.be.services.JobsMgr
 import org.pongasoft.jamba.quickstart.server.be.services.JobsMgrImpl
@@ -18,13 +16,10 @@ data class Beans(val clock: Clock = Clock.systemUTC(),
                  val blankPluginCache: BlankPluginCache =
                      BlankPluginCache(blankPluginRoot = blankPluginRootDir,
                                       clock = clock),
-                 val jobsMgr: JobsMgr = JobsMgrImpl(clock, blankPluginCache))
+                 val jobsMgr: JobsMgr = JobsMgrImpl(clock, blankPluginCache)) {
 
-private val beansKey = AttributeKey<Beans>("Beans")
+  companion object {
+    val default by lazy { Beans() }
+  }
 
-/**
- * Exposes beans via <code>call.beans</code>
- */
-var ApplicationCall.beans: Beans
-  get() { return attributes[beansKey] }
-  set(beans) { attributes.put(beansKey, beans) }
+}

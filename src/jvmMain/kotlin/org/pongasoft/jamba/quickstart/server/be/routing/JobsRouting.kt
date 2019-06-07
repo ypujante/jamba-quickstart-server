@@ -7,19 +7,19 @@ import io.ktor.routing.get
 import io.ktor.routing.post
 import io.ktor.routing.route
 import io.ktor.routing.routing
-import org.pongasoft.jamba.quickstart.server.be.beans
+import org.pongasoft.jamba.quickstart.server.be.Beans
 
 /*
   Check Locations: https://ktor.io/servers/features/locations.html for building url
  */
 
-fun Application.jobsRouting() {
+fun Application.jobsRouting(beans: Beans = Beans.default) {
   val log = environment.log
+  log.info("Initializing Routing => $beans")
   routing {
     route("/api/v1/jobs") {
       get {
         log.info("GET /jobs")
-        val beans = call.beans
         log.info("beans => ${beans}")
         call.respondText("get /jobs ...")
       }
