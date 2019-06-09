@@ -107,7 +107,11 @@ task run(type: JavaExec, dependsOn: [jvmMainClasses, jsJar]) {
         configurations.jvmRuntimeClasspath,
     ]
   }
-  args = ["-P:org.pongasoft.jamba.quickstart.server.staticWebDir=${webFolder.canonicalPath}"]
+  args = [
+      "-P:api.static.webdir=${webFolder.canonicalPath}",
+      "-P:api.admin.username=admin",
+      "-P:api.admin.password=password"
+  ]
 }
 
 /**

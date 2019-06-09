@@ -24,8 +24,11 @@ import org.pongasoft.jamba.quickstart.server.be.services.Reloadable
 /**
  * Defines the api to admin features
  */
-fun Application.adminAPI(adminUserName: String, adminPassword: String, blankPluginMgr: BlankPluginMgr) {
+fun Application.adminAPI(adminUserName: String?, adminPassword: String?, blankPluginMgr: BlankPluginMgr) {
   val log = environment.log
+
+  if(adminUserName == null || adminPassword == null)
+    throw IllegalStateException("you must provide a username/password")
 
   // we protect the section behind authentication
   authentication {

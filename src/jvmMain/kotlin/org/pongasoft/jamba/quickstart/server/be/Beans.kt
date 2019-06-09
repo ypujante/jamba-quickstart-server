@@ -18,5 +18,5 @@ data class Beans(val clock: Clock = Clock.systemUTC(),
                      BlankPluginCache(blankPluginRoot = blankPluginRootDir,
                                       clock = clock),
                  val jobsMgr: JobsMgr = JobsMgrImpl(clock, blankPluginMgr),
-                 val adminUserName: String = "admin",
-                 val adminPassword: String = "password")
+                 val adminUserName: String? = null,
+                 val adminPassword: String? = null)

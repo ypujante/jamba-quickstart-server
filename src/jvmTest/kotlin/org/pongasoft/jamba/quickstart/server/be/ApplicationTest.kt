@@ -67,7 +67,7 @@ class ApplicationTest {
   }
 
   val jobsMgr = MyJobsMgr(clock)
-  val beans = Beans(jobsMgr = jobsMgr)
+  val beans = Beans(jobsMgr = jobsMgr, adminUserName = "admin", adminPassword = "password")
 
   /**
    * Test for POST /jobs (add a job

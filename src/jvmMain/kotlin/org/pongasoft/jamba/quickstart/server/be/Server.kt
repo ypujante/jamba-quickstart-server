@@ -12,6 +12,7 @@ import io.ktor.routing.Routing
 import io.ktor.server.engine.commandLineEnvironment
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
+import io.ktor.util.KtorExperimentalAPI
 import org.linkedin.util.lifecycle.Destroyable
 import org.pongasoft.jamba.quickstart.server.be.api.api
 import org.pongasoft.jamba.quickstart.server.be.api.jobsAPI
@@ -49,8 +50,14 @@ fun main(args: Array<String>) {
 /**
  * Main entry point (check application.conf).
  */
+@KtorExperimentalAPI
 fun Application.initServer() {
-  initServer(Beans())
+  // extract username and password from config
+  val username = environment.config.propertyOrNull("api.admin.username")?.getString()
+  val password = environment.config.propertyOrNull("api.admin.password")?.getString()
+
+  initServer(Beans(adminUserName = username,
+                   adminPassword = password))
 }
 
 /**
