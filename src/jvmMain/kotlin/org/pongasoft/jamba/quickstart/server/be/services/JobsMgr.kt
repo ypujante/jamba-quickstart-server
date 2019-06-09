@@ -28,13 +28,6 @@ interface JobsMgr {
 }
 
 /**
- * Generate the zip file
- */
-interface ZipFileCreator {
-  fun generateZipFile(zipFile: File, tokens: Map<String, String>): File
-}
-
-/**
  * Status for a job
  */
 enum class JobStatus {
@@ -59,7 +52,7 @@ data class JobRun(val jobId: String,
  */
 private class Job(val jobId: String,
                   val plugin: Map<String, String>,
-                  val zfc: ZipFileCreator,
+                  val blankPluginMgr: BlankPluginMgr,
                   val clock: Clock) {
 
   val MODULE = Job::class.java.name!!
@@ -88,14 +81,14 @@ private class Job(val jobId: String,
 
     val name = plugin["name"] ?: "Plugin"
 
-    return zfc.generateZipFile(dir.toFile().child("$name-src.zip"), plugin)
+    return blankPluginMgr.generateBlankPlugin(dir.toFile().child("$name-src.zip"), plugin)
   }
 }
 
 /**
  * Manages job */
 class JobsMgrImpl(private val clock: Clock,
-                  private val zfc: ZipFileCreator) : JobsMgr, Destroyable {
+                  private val blankPluginMgr: BlankPluginMgr) : JobsMgr, Destroyable {
 
   val MODULE = JobsMgr::class.java.name!!
   val log = org.slf4j.LoggerFactory.getLogger(MODULE)!!
@@ -133,7 +126,7 @@ class JobsMgrImpl(private val clock: Clock,
     val time = SimpleDateFormat("yyyyMMdd-HHmmss").format(Date(clock.millis()))
     val jobId = time + "-" + UUID.randomUUID().toString()
 
-    val job = Job(jobId, plugin, zfc, clock)
+    val job = Job(jobId, plugin, blankPluginMgr, clock)
 
     return _lock.withLock {
       _jobs.put(jobId, job)

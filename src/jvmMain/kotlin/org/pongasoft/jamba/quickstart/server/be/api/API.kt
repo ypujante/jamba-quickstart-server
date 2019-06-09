@@ -31,6 +31,7 @@ data class Job(var jobId: String? = null,
  */
 fun Application.api(beans: Beans) {
   jobsAPI(beans.jobsMgr)
+  adminAPI(beans.adminUserName, beans.adminPassword, beans.blankPluginMgr)
 }
 
 internal fun RequestConnectionPoint.url(path: String) : URLBuilder {

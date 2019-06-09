@@ -69,7 +69,7 @@ class BlankPluginCacheTest
     val zipFile = dir.toFile().child("foo.zip")
     zipFile.deleteOnExit()
 
-    cache.generateZipFile(zipFile, tokens)
+    cache.generateBlankPlugin(zipFile, tokens)
 
     val expectedEntries =
         mutableMapOf("/" to null,

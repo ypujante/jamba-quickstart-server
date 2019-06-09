@@ -16,11 +16,20 @@ interface Reloadable {
 }
 
 /**
+ * Basic interface for the blank plugin manager
+ */
+interface BlankPluginMgr {
+  val fileCount: Int
+  val jambaGitHash : String
+  fun generateBlankPlugin(toZipFile: File, tokens: Map<String, String>): File
+}
+
+/**
  * Loads all the file in memory. Use reload to reload them from the filesystem.
  */
 class BlankPluginCache(val blankPluginRoot: File,
                        val clock: Clock = Clock.systemDefaultZone(),
-                       val UUIDGenerator : () -> UUID = { UUID.randomUUID() }) : ZipFileCreator, Reloadable {
+                       val UUIDGenerator : () -> UUID = { UUID.randomUUID() }) : BlankPluginMgr, Reloadable {
 
   val MODULE = BlankPluginCache::class.java.name!!
   val log = org.slf4j.LoggerFactory.getLogger(MODULE)!!
@@ -29,6 +38,16 @@ class BlankPluginCache(val blankPluginRoot: File,
   private var _jambaGitHash = ""
 
   init { reload() }
+
+  /**
+   * Number of files that make the plugin
+   */
+  override val fileCount : Int get() = _files.size
+
+  /**
+   * Jamba git hash (computed)
+   */
+  override val jambaGitHash: String get() = _jambaGitHash
 
   /**
    * Populates the cache */
@@ -92,16 +111,16 @@ class BlankPluginCache(val blankPluginRoot: File,
   /**
    * Processes each entry in the cache through the token replacement mechanism and generate a zip file
    *
-   * @param zipFile the location of the file that will be generated
+   * @param toZipFile the location of the file that will be generated
    * @return the zip file provided as argument
    */
-  override fun generateZipFile(zipFile: File, tokens: Map<String, String>) : File {
+  override fun generateBlankPlugin(toZipFile: File, tokens: Map<String, String>) : File {
 
-    FileSystems.newFileSystem(URI.create("jar:file:${zipFile.canonicalPath}"),
+    FileSystems.newFileSystem(URI.create("jar:file:${toZipFile.canonicalPath}"),
                               mapOf("create" to "true"),
                               null).use { zfs ->
 
-      val root = zipFile.name.removeSuffix(".${zipFile.extension}")
+      val root = toZipFile.name.removeSuffix(".${toZipFile.extension}")
 
       forEach(tokens) { entry, content ->
         val path = zfs.getPath(root, entry)
@@ -110,7 +129,7 @@ class BlankPluginCache(val blankPluginRoot: File,
         Files.copy(content.byteInputStream(), path)
       }
     }
-    return zipFile
+    return toZipFile
   }
 
   /**
@@ -133,11 +152,11 @@ class BlankPluginCache(val blankPluginRoot: File,
               .start()
               .syncOut(timeout = 10, unit = TimeUnit.SECONDS)
       if(tagHashResult.exitValue == 0)
-        tagHashResult.stdout
+        tagHashResult.stdout.trim()
       else
       {
         log.warn("Could not determine git tag hash: ${tagHashResult.stdout}")
-        hashResult.stdout
+        hashResult.stdout.trim()
       }
     } else {
       log.warn("Could not determine git hash: ${hashResult.stdout}")
