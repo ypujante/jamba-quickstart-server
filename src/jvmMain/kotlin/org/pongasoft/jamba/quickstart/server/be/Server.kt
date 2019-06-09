@@ -2,16 +2,19 @@ package org.pongasoft.jamba.quickstart.server.be
 
 import io.ktor.application.Application
 import io.ktor.application.ApplicationStopped
-import io.ktor.application.ApplicationStopping
 import io.ktor.application.install
 import io.ktor.features.CallLogging
 import io.ktor.features.ContentNegotiation
 import io.ktor.features.DefaultHeaders
 import io.ktor.http.ContentType
 import io.ktor.jackson.JacksonConverter
+import io.ktor.routing.Routing
 import io.ktor.server.engine.commandLineEnvironment
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
+import org.linkedin.util.lifecycle.Destroyable
+import org.pongasoft.jamba.quickstart.server.be.api.api
+import org.pongasoft.jamba.quickstart.server.be.api.jobsAPI
 import org.slf4j.event.Level
 import java.util.concurrent.TimeUnit
 import kotlin.system.exitProcess
@@ -40,14 +43,30 @@ fun main(args: Array<String>) {
 // handle status pages https://ktor.io/servers/features/status-pages.html
 // use webjars? https://ktor.io/servers/features/webjars.html
 
-fun Application.initServer(beans: Beans = Beans.default) {
+// check https://github.com/JetBrains/kotlinconf-app/blob/master/backend/src/org/jetbrains/kotlinconf/backend/Main.kt
+// for inspiration and details
+
+/**
+ * Main entry point (check application.conf).
+ */
+fun Application.initServer() {
+  initServer(Beans())
+}
+
+/**
+ * Initializes the server
+ */
+fun Application.initServer(beans: Beans) {
   val log = environment.log
 
   log.info("Initializing Server...")
 
+  // register an event to stop the server when the application shuts down
   environment.monitor.subscribe(ApplicationStopped) {
-    log.info("Stopping Server... ${beans}")
-    beans.jobsMgr.destroy()
+    log.info("Stopping Server...")
+
+    // if the jobs mgr is destroyable then destroy it
+    (beans.jobsMgr as? Destroyable)?.destroy()
   }
 
   // add date and server headers
@@ -61,5 +80,10 @@ fun Application.initServer(beans: Beans = Beans.default) {
   // log calls
   install(CallLogging) {
     level = Level.INFO
+  }
+
+  // Configure routing
+  install(Routing) {
+    api(beans)
   }
 }

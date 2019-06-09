@@ -11,9 +11,16 @@ import java.time.LocalDate
 import java.util.*
 import java.util.concurrent.TimeUnit
 
+interface Reloadable {
+  fun reload()
+}
+
+/**
+ * Loads all the file in memory. Use reload to reload them from the filesystem.
+ */
 class BlankPluginCache(val blankPluginRoot: File,
                        val clock: Clock = Clock.systemDefaultZone(),
-                       val UUIDGenerator : () -> UUID = { UUID.randomUUID() }) : ZipFileCreator {
+                       val UUIDGenerator : () -> UUID = { UUID.randomUUID() }) : ZipFileCreator, Reloadable {
 
   val MODULE = BlankPluginCache::class.java.name!!
   val log = org.slf4j.LoggerFactory.getLogger(MODULE)!!
@@ -21,11 +28,11 @@ class BlankPluginCache(val blankPluginRoot: File,
   private var _files : Map<String, String> = emptyMap()
   private var _jambaGitHash = ""
 
-  init { reload(blankPluginRoot) }
+  init { reload() }
 
   /**
    * Populates the cache */
-  fun reload(blankPluginRoot: File) {
+  override fun reload() {
     log.info("Reloading caches from ${blankPluginRoot.canonicalPath}")
     _files = blankPluginRoot.walkTopDown()
         .filter { it.isFile }

@@ -59,6 +59,7 @@ kotlin {
       dependencies {
         implementation kotlin('test')
         implementation kotlin('test-junit')
+        implementation "io.ktor:ktor-server-test-host:$ktor_version"
       }
     }
     jsMain {
