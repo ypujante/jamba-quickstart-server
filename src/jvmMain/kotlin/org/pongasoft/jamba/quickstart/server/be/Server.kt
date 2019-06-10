@@ -15,7 +15,7 @@ import io.ktor.server.netty.Netty
 import io.ktor.util.KtorExperimentalAPI
 import org.linkedin.util.lifecycle.Destroyable
 import org.pongasoft.jamba.quickstart.server.be.api.api
-import org.pongasoft.jamba.quickstart.server.be.api.jobsAPI
+import org.pongasoft.jamba.quickstart.server.be.pages.HTML
 import org.slf4j.event.Level
 import java.util.concurrent.TimeUnit
 import kotlin.system.exitProcess
@@ -92,5 +92,6 @@ fun Application.initServer(beans: Beans) {
   // Configure routing
   install(Routing) {
     api(beans)
+    HTML(beans)
   }
 }
