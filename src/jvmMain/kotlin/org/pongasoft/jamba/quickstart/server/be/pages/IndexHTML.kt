@@ -5,6 +5,7 @@ import io.ktor.application.call
 import io.ktor.html.respondHtml
 import io.ktor.routing.get
 import io.ktor.routing.routing
+import io.ktor.util.KtorExperimentalAPI
 import kotlinx.html.FormMethod
 import kotlinx.html.InputType
 import kotlinx.html.TBODY
@@ -30,12 +31,13 @@ data class OptionEntry(val name: String,
                        val defaultValue: String = "",
                        val desc: String = "")
 
-fun TBODY.optionEntry(entry: OptionEntry) : Unit = tr {
-  td("name") { label { htmlFor=entry.name; +entry.label } }
-  td("control") { input(type=entry.type, name=entry.name) {id=entry.name; value=entry.defaultValue; +entry.defaultValue } }
+fun TBODY.optionEntry(entry: OptionEntry): Unit = tr {
+  td("name") { label { htmlFor = entry.name; +entry.label } }
+  td("control") { input(type = entry.type, name = entry.name) { id = entry.name; value = entry.defaultValue; +entry.defaultValue } }
   td("desc") { +entry.desc }
 }
 
+@KtorExperimentalAPI
 fun Application.indexHTML(blankPluginMgr: BlankPluginMgr) {
 
   val entries =
@@ -43,11 +45,11 @@ fun Application.indexHTML(blankPluginMgr: BlankPluginMgr) {
                           label = "Plugin Name",
                           desc = "Must be a valid C++ class name"),
               OptionEntry(name = "enable_vst2",
-                          type=InputType.checkBox,
+                          type = InputType.checkBox,
                           label = "Enable VST2",
                           desc = "Makes the plugin compatible with both VST2 and VST3"),
               OptionEntry(name = "enable_audio_unit",
-                          type=InputType.checkBox,
+                          type = InputType.checkBox,
                           label = "Enable Audio Unit",
                           desc = "Generates an (additional) Audio Unit compatible plugin"),
               OptionEntry(name = "audio_unit_manufacturer_code",
@@ -71,7 +73,7 @@ fun Application.indexHTML(blankPluginMgr: BlankPluginMgr) {
               OptionEntry(name = "project_name",
                           label = "Project name",
                           desc = "Name of the project itself (which will be the name of the zip file generated)")
-              )
+      )
 
   routing {
     get("/index.html") {
@@ -83,19 +85,24 @@ fun Application.indexHTML(blankPluginMgr: BlankPluginMgr) {
 
         body {
           h1 { +"Jamba - Quick Start" }
-          form(method = FormMethod.post, action="$API_URL/jobs") {
+          form(method = FormMethod.post, action = "$API_URL/jobs") {
             table {
               tbody {
                 entries.forEach { optionEntry(it) }
                 tr {
                   td {
-                    colSpan="3"
-                    input(type=InputType.submit) { value="Generate blank plugin (Jamba ${blankPluginMgr.jambaGitHash})"}
+                    colSpan = "3"
+                    input(type = InputType.button) {
+                      id = "submit"
+                      value = "Generate blank plugin (Jamba ${blankPluginMgr.jambaGitHash})"
+                      disabled = true
+                    }
                   }
                 }
               }
             }
           }
+          scripts(environment.config.staticPath)
         }
       }
 

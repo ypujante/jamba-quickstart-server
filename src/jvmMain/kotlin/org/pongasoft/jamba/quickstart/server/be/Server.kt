@@ -63,6 +63,7 @@ fun Application.initServer() {
 /**
  * Initializes the server
  */
+@KtorExperimentalAPI
 fun Application.initServer(beans: Beans) {
   val log = environment.log
 
