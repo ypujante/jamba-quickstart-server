@@ -1,129 +1,170 @@
 package org.pongasoft.jamba.quickstart.server.fe
 
+import org.w3c.dom.HTMLAnchorElement
 import org.w3c.dom.HTMLInputElement
 import org.w3c.dom.events.Event
 import org.w3c.xhr.FormData
 import org.w3c.fetch.RequestInit
 import kotlin.browser.document
 import kotlin.browser.window
+import kotlin.dom.createElement
 
-class OptionEntry(val name: String,
-                  val elt: HTMLInputElement) {
-
-  fun addEventListener(type: String, block: OptionEntry.(event: Event) -> Unit) {
-    elt.addEventListener(type, { event -> block(event) })
-  }
-
-  fun onChange(block: OptionEntry.(event: Event) -> Unit) {
-    addEventListener("change", block)
-  }
-
-  var value : String
-    get() = elt.value
-    set(s) { elt.value = s }
-
-  private var _computedValue : String? = null
-
-  fun setComputedValue(computedValue: String) {
-    if(value.isEmpty() || value == _computedValue)
-      value = computedValue
-    _computedValue = computedValue
-  }
+/**
+ * Adding a listener where the element is passed back in the closure as "this" for convenience */
+fun HTMLInputElement.addListener(type: String, block: HTMLInputElement.(event: Event) -> Unit) {
+  addEventListener(type, { event -> block(event) })
 }
 
-fun computeAudioUnitManufacturerCode(pluginName: String?) : String {
-  if(pluginName == null || pluginName.isEmpty())
+/**
+ * Shortcut for change event */
+fun HTMLInputElement.onChange(block: HTMLInputElement.(event: Event) -> Unit) {
+  addListener("change", block)
+}
+
+/**
+ * Add a __computedValue field to the element to store the value that was computed so that when it gets
+ * recomputed it can be updated but ONLY in the event the user has not manually modified it
+ */
+fun HTMLInputElement.setComputedValue(computedValue: String) {
+  val dynElt : dynamic = this
+  if(value.isEmpty() || value == dynElt.__computedValue)
+    value = computedValue
+  dynElt.__computedValue = computedValue
+}
+
+fun computeAudioUnitManufacturerCode(pluginName: String?): String {
+  if (pluginName == null || pluginName.isEmpty())
     return ""
 
   return pluginName.substring(0..3).padEnd(4, 'x').capitalize()
 }
 
-fun computeNamespace(pluginName: String?, company: String?) : String {
-  if(pluginName == null || pluginName.isEmpty())
+fun computeNamespace(pluginName: String?, company: String?): String {
+  if (pluginName == null || pluginName.isEmpty())
     return ""
 
-  return if(company == null || company.isEmpty())
+  return if (company == null || company.isEmpty())
     "VST::$pluginName"
   else
     "$company::VST::$pluginName"
 }
 
-fun computeProjectName(pluginName: String?, company: String?) : String {
-  if(pluginName == null || pluginName.isEmpty())
+fun computeProjectName(pluginName: String?, company: String?): String {
+  if (pluginName == null || pluginName.isEmpty())
     return ""
 
-  return if(company == null || company.isEmpty())
+  return if (company == null || company.isEmpty())
     "$pluginName-plugin"
   else
     "$company-$pluginName-plugin"
 }
 
+/**
+ * Submit form and handle json result
+ */
+fun submitForm(submitElt: HTMLInputElement, handler: (dynamic) -> Unit) {
+  submitElt.form?.let { form ->
+    window.fetch(form.action,
+                 RequestInit(method = form.method,
+                             body = FormData(form)))
+        .then { response ->
+          if (response.status == 200.toShort()) {
+            response.json()
+          } else
+            println("there was an error...${response.status}")
+        }
+        .then { json: dynamic ->
+          handler(json)
+        }
+  }
+}
 
+fun checkJob(jobURI: String,
+             delayInMs: Int,
+             repeat: Int,
+             onReady: (resultURI: String) -> Unit,
+             onFailure: (message: String) -> Unit) {
+  if(repeat <= 0)
+  {
+    onFailure("No response within reasonable time")
+    return
+  }
+
+  window.fetch(jobURI,
+               RequestInit(method="GET"))
+      .then { response ->
+        if (response.status == 200.toShort()) {
+          response.json()
+        } else
+          println("there was an error...${response.status}")
+      }
+      .then { json: dynamic ->
+        if(json.resultURI != null)
+        {
+          onReady(json.resultURI as String)
+        }
+        else
+        {
+          println("Job not completed yet... looping")
+          window.setTimeout(timeout = delayInMs,
+                            handler = { checkJob(jobURI, delayInMs, repeat - 1, onReady, onFailure) })
+        }
+      }
+}
+
+/**
+ * Main function invoked by the HTML to initialize callbacks
+ */
 @JsName("init")
 @Suppress("unused")
 fun init() {
   println("Initializing callbacks")
 
-  val entries = arrayOf("name",
-                        "enable_vst2",
-                        "enable_audio_unit",
-                        "audio_unit_manufacturer_code",
-                        "filename",
-                        "filename",
-                        "company",
-                        "company_url",
-                        "company_email",
-                        "namespace",
-                        "project_name",
-                        "submit").associateBy({it}) { id ->
-    OptionEntry(name=id, elt=document.getElementById(id) as HTMLInputElement)
+  val elements = arrayOf("name",
+                         "enable_vst2",
+                         "enable_audio_unit",
+                         "audio_unit_manufacturer_code",
+                         "filename",
+                         "filename",
+                         "company",
+                         "company_url",
+                         "company_email",
+                         "namespace",
+                         "project_name",
+                         "submit").associateBy({ it }) { id ->
+    document.getElementById(id) as? HTMLInputElement
   }
 
-  entries["name"]?.onChange {
+  elements["name"]?.onChange {
     println("changed name value => $value")
-    entries["audio_unit_manufacturer_code"]?.setComputedValue(computeAudioUnitManufacturerCode(value))
-    entries["namespace"]?.setComputedValue(computeNamespace(value, entries["company"]?.value))
-    entries["project_name"]?.setComputedValue(computeProjectName(value, entries["company"]?.value))
-    entries["submit"]?.elt?.disabled = value.isEmpty()
+    elements["audio_unit_manufacturer_code"]?.setComputedValue(computeAudioUnitManufacturerCode(value))
+    elements["namespace"]?.setComputedValue(computeNamespace(value, elements["company"]?.value))
+    elements["project_name"]?.setComputedValue(computeProjectName(value, elements["company"]?.value))
+    elements["submit"]?.disabled = value.isEmpty()
   }
 
-  entries["company"]?.onChange {
+  elements["company"]?.onChange {
     println("changed company value => $value")
-    entries["namespace"]?.setComputedValue(computeNamespace(entries["name"]?.value, value))
-    entries["project_name"]?.setComputedValue(computeProjectName(entries["name"]?.value, value))
-    entries["company_url"]?.setComputedValue("https://www.$value.com")
-    entries["company_email"]?.setComputedValue("support@$value.com")
+    elements["namespace"]?.setComputedValue(computeNamespace(elements["name"]?.value, value))
+    elements["project_name"]?.setComputedValue(computeProjectName(elements["name"]?.value, value))
+    elements["company_url"]?.setComputedValue("https://www.$value.com")
+    elements["company_email"]?.setComputedValue("support@$value.com")
   }
 
-  entries["submit"]?.addEventListener("click") {
-    elt.form?.let { form ->
-      println("Submitting query...")
-      window.fetch(form.action,
-                   RequestInit(method = "POST",
-                               body = FormData(form)))
-          .then { response ->
-            if(response.status == 200.toShort())
-            {
-//              println("success from request => ${response.json()}")
-              response.json()
-            }
-            else
-              println("there was an error...${response.status}")
-          }
-          .then { json : dynamic ->
-            println("success from request => ${json.uri}")
-          }
-//      val xhr = XMLHttpRequest()
-//      xhr.open(method = "POST", url = form.action, async = true)
-//      xhr.onreadystatechange = {
-//        if(xhr.readyState > 3 && xhr.status == 200.toShort()) {
-//          println("success from request => ${xhr.responseText}")
-//        } else {
-//          println("request failure ${xhr.status}")
-//        }
-//
-//      }
-//      xhr.send(FormData(form))
+  elements["submit"]?.addListener("click") {
+    submitForm(this) { json ->
+      println("success from request => ${json.uri}")
+      checkJob(jobURI = json.uri, delayInMs = 1000, repeat = 5,
+               onReady = { resultURI ->
+                 println("Got it!!! $resultURI")
+                 (document.createElement("a") { this as HTMLAnchorElement
+                   href = resultURI
+                   target = "_blank"
+                 } as HTMLAnchorElement).click()
+               },
+               onFailure = {
+                 println("there was error $it")
+               })
     }
   }
 }

@@ -8,6 +8,7 @@ import io.ktor.routing.routing
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.html.BODY
 import kotlinx.html.script
+import kotlinx.html.unsafe
 import java.io.File
 
 /**
@@ -15,8 +16,10 @@ import java.io.File
 fun BODY.scripts(staticPath: String) {
   script(src="$staticPath/require.min.js") {}
   script {
-    +"require.config({baseUrl: '$staticPath'});\n"
-    +"require(['$staticPath/jamba-quickstart-server.js'], function(js) {js.org.pongasoft.jamba.quickstart.server.fe.init(); });\n"
+    unsafe {
+      +"require.config({baseUrl: '$staticPath'});\n"
+      +"require(['$staticPath/jamba-quickstart-server.js'], function(js) {js.org.pongasoft.jamba.quickstart.server.fe.init(); });\n"
+    }
   }
 }
 
