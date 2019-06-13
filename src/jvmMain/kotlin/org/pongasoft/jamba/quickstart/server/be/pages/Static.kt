@@ -7,6 +7,8 @@ import io.ktor.http.content.static
 import io.ktor.routing.routing
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.html.BODY
+import kotlinx.html.HEAD
+import kotlinx.html.link
 import kotlinx.html.script
 import kotlinx.html.unsafe
 import java.io.File
@@ -24,6 +26,13 @@ fun BODY.scripts(staticPath: String) {
 }
 
 /**
+ * Function to add css
+ */
+fun HEAD.css(staticPath: String) {
+  link(rel = "stylesheet", href="$staticPath/main.css")
+}
+
+/**
  * Adding extension function to be able to change the static path via config */
 @KtorExperimentalAPI
 val ApplicationConfig.staticPath : String get() { return propertyOrNull("api.static.path")?.getString() ?: "/static" }
@@ -32,6 +41,8 @@ val ApplicationConfig.staticPath : String get() { return propertyOrNull("api.sta
  * Mounts static path to be served (javascript) */
 @KtorExperimentalAPI
 fun Application.static() {
+  // The property can be added in the `application.conf` file or more likely from the command line
+  // `-P:api.static.webdir=pathToWebdir`. See `build.gradle` for an example. */
   val webDir : File? = environment.config.propertyOrNull("api.static.webdir")?.getString()?.let { File(it) }
 
   if(webDir != null && webDir.isDirectory)

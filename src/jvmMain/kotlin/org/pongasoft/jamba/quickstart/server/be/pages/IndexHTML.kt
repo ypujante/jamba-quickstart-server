@@ -10,6 +10,7 @@ import kotlinx.html.FormMethod
 import kotlinx.html.InputType
 import kotlinx.html.TBODY
 import kotlinx.html.body
+import kotlinx.html.div
 import kotlinx.html.form
 import kotlinx.html.h1
 import kotlinx.html.head
@@ -33,7 +34,15 @@ data class OptionEntry(val name: String,
 
 fun TBODY.optionEntry(entry: OptionEntry): Unit = tr {
   td("name") { label { htmlFor = entry.name; +entry.label } }
-  td("control") { input(type = entry.type, name = entry.name) { id = entry.name; value = entry.defaultValue; +entry.defaultValue } }
+  td("control") {
+    input(type = entry.type, name = entry.name) {
+      id = entry.name
+      value = entry.defaultValue
+      if(entry.type == InputType.checkBox)
+        checked = true
+      +entry.defaultValue
+    }
+  }
   td("desc") { +entry.desc }
 }
 
@@ -81,6 +90,7 @@ fun Application.indexHTML(blankPluginMgr: BlankPluginMgr) {
         head {
           meta(charset = "UTF-8")
           title("Jamba - Quickstart")
+          css(environment.config.staticPath)
         }
 
         body {
@@ -102,6 +112,7 @@ fun Application.indexHTML(blankPluginMgr: BlankPluginMgr) {
               }
             }
           }
+          div {id = "notification"}
           scripts(environment.config.staticPath)
         }
       }
