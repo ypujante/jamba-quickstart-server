@@ -39,4 +39,8 @@ List of demonstrated features (frontend)
 * adding dom elements (the example is small so it is not using kotlinx.html but it could)
 * downloading a file via javascript
 
+License
+=======
+
+Apache 2.0
 
