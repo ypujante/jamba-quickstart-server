@@ -10,6 +10,7 @@ import io.ktor.http.formUrlEncode
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
 import io.ktor.server.testing.withTestApplication
+import io.ktor.util.KtorExperimentalAPI
 import org.linkedin.util.clock.Clock
 import org.linkedin.util.clock.SettableClock
 import org.linkedin.util.lifecycle.Destroyable
@@ -72,6 +73,7 @@ class ApplicationTest {
   /**
    * Test for POST /jobs (add a job
    */
+  @KtorExperimentalAPI
   @Test fun testJobsPost() {
     withTestApplication({
                           initServer(beans)

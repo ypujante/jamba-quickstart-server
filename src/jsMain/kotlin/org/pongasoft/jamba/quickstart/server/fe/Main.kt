@@ -186,6 +186,16 @@ class Notification(id: String) {
 }
 
 /**
+ * This is a "trick" to force the browser to download a file: create an anchor element and click it. For security
+ * reasons this would not work if the uri is not the same domain. */
+fun downloadFile(uri: String) {
+  (document.createElement("a") { this as HTMLAnchorElement
+    href = uri
+    target = "_blank"
+  } as HTMLAnchorElement).click()
+}
+
+/**
  * Main function invoked by the HTML to initialize callbacks
  */
 @JsName("init")
@@ -232,11 +242,7 @@ fun init() {
                onSuccessJson = { json ->
                  checkJob(jobURI = json.uri, delayInMs = 1000, repeat = 5,
                           onResult = { resultURI ->
-                            // this forces the browser to download the result
-                            (document.createElement("a") { this as HTMLAnchorElement
-                              href = resultURI
-                              target = "_blank"
-                            } as HTMLAnchorElement).click()
+                            downloadFile(resultURI)
                             notification.success("Download complete")
                           },
                           onRepeat = { r ->
