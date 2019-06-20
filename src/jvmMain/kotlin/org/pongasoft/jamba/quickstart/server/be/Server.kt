@@ -9,6 +9,7 @@ import io.ktor.features.DefaultHeaders
 import io.ktor.http.ContentType
 import io.ktor.jackson.JacksonConverter
 import io.ktor.routing.Routing
+import io.ktor.server.engine.addShutdownHook
 import io.ktor.server.engine.commandLineEnvironment
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
@@ -20,11 +21,12 @@ import org.slf4j.event.Level
 import java.util.concurrent.TimeUnit
 import kotlin.system.exitProcess
 
+@KtorExperimentalAPI
 fun main(args: Array<String>) {
   val server = embeddedServer(Netty,
                               environment = commandLineEnvironment(args))
 
-  Runtime.getRuntime().addShutdownHook(Thread {
+  server.addShutdownHook {
     val log = server.environment.log
     log.info("Shutting down")
     try {
@@ -33,7 +35,7 @@ fun main(args: Array<String>) {
       log.warn("Error while shutting down (ignored)", th)
       exitProcess(1)
     }
-  })
+  }
 
   server.start(wait = true)
   server.environment.log.info("Shutdown complete.")
