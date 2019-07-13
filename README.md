@@ -3,13 +3,13 @@ Introduction
 
 This project implements a small rest service which handles a request to generate a zip file containing a customized Jamba/VST blank plugin.
 
-This project started as a Spring boot application using kotlin and was ported to [ktor][https://ktor.io/] so that both the backend (rest service) and the frontend (html + javascript) is 100% written in kotlin.
+This project started as a Spring boot application using kotlin and was ported to [ktor](https://ktor.io/) so that both the backend (rest service) and the frontend (html + javascript) is 100% written in kotlin.
 
 This project is currently not deployed as I believe there is a way to implement it as a pure javascript frontend (no backend) and this is what will be deployed when completed.
 
 I decided to release/open source this internal project as it serves as a more complete demonstration than a basic "Hello World" application.
 
-This project was built with kotlin 1.3.31
+This project was built with kotlin 1.3.40
 
 List of demonstrated features (backend)
 ---------------------------------------
